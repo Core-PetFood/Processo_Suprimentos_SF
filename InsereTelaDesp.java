@@ -73,6 +73,18 @@ public class InsereTelaDesp implements AcaoRotinaJava {
             excluiFinNota.setNamedParameter("NUNOTA", nunota);
             excluiFinNota.executeUpdate();
 
+
+            // Verifica se o pedido de compra foi aprovador
+            NativeSql verificaStatusNFe = new NativeSql(jdbc);
+            verificaStatusNFe.appendSql("SELECT STATUSNOTA FROM TGFCAB WHERE NUNOTA = :NUNOTA");
+            verificaStatusNFe.setNamedParameter("NUNOTA", nunota);
+            ResultSet result = verificaStatusNFe.executeQuery();
+            if (result.next() && !"L".equals(result.getString("STATUSNOTA"))) {
+                throw new Exception("Erro: O pedido de compra não está CONFIRMADO ou está Pendente de APROVAÇÃO do Gestor, verifique e tente novamente.");
+            }
+            result.close();
+
+
             // Verifica se o pedido de compra foi aprovado
             NativeSql verificaStatusPedido = new NativeSql(jdbc);
             verificaStatusPedido.appendSql("SELECT VLRLIBERADO FROM TSILIB WHERE NUCHAVE = :NUNOTA AND TABELA = 'TGFCAB' AND EVENTO = 44");
